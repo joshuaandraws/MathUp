@@ -1,0 +1,2221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MathUp - Level Up Your Math Skills</title>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --neon-green: #39ff14;
+  --neon-pink: #ff6ec7;
+  --neon-blue: #00f5ff;
+  --neon-yellow: #ffe600;
+  --neon-purple: #bf5fff;
+  --dark-bg: #0d0d1a;
+  --dark-card: #13132b;
+  --dark-card2: #1a1a35;
+  --line-color: #1e3a5f;
+  --margin-color: #ff6b6b44;
+  --text-main: #e8eaf6;
+  --text-dim: #8892b0;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background-color: var(--dark-bg);
+  color: var(--text-main);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ===== NOTEBOOK PAPER BACKGROUND ===== */
+.notebook-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.notebook-lines {
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(
+      transparent,
+      transparent 31px,
+      var(--line-color) 31px,
+      var(--line-color) 32px
+    );
+  animation: linesShift 20s linear infinite;
+  opacity: 0.6;
+}
+
+@keyframes linesShift {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 32px; }
+}
+
+.margin-line {
+  position: absolute;
+  left: 80px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--margin-color);
+  animation: marginPulse 4s ease-in-out infinite;
+}
+
+@keyframes marginPulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+/* ===== DOODLES ===== */
+.doodle {
+  position: absolute;
+  font-size: 2rem;
+  animation: floatDoodle linear infinite;
+  opacity: 0.15;
+  user-select: none;
+}
+
+@keyframes floatDoodle {
+  0% { transform: translateY(0) rotate(0deg); opacity: 0.08; }
+  25% { transform: translateY(-20px) rotate(5deg); opacity: 0.18; }
+  50% { transform: translateY(-10px) rotate(-3deg); opacity: 0.12; }
+  75% { transform: translateY(-25px) rotate(8deg); opacity: 0.2; }
+  100% { transform: translateY(0) rotate(0deg); opacity: 0.08; }
+}
+
+/* ===== SVG DOODLES ===== */
+.doodle-svg {
+  position: absolute;
+  opacity: 0.1;
+  animation: floatDoodle linear infinite;
+}
+
+/* ===== MAIN LAYOUT ===== */
+#app {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+}
+
+/* ===== SCREENS ===== */
+.screen {
+  display: none;
+  min-height: 100vh;
+  padding: 20px;
+  animation: fadeIn 0.4s ease;
+}
+
+.screen.active { display: block; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== HEADER / LOGO ===== */
+.logo-area {
+  text-align: center;
+  padding: 40px 20px 20px;
+}
+
+.logo {
+  font-family: 'Bangers', cursive;
+  font-size: clamp(3rem, 10vw, 6rem);
+  letter-spacing: 0.05em;
+  background: linear-gradient(135deg, var(--neon-green), var(--neon-blue), var(--neon-pink));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: none;
+  filter: drop-shadow(0 0 30px var(--neon-blue));
+  animation: logoPulse 3s ease-in-out infinite;
+}
+
+@keyframes logoPulse {
+  0%, 100% { filter: drop-shadow(0 0 20px var(--neon-blue)); }
+  50% { filter: drop-shadow(0 0 40px var(--neon-pink)); }
+}
+
+.tagline {
+  font-size: 1.1rem;
+  color: var(--text-dim);
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-top: 8px;
+}
+
+/* ===== CARDS ===== */
+.card {
+  background: var(--dark-card);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(57,255,20,0.3), rgba(0,245,255,0.1), rgba(255,110,199,0.3));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0,245,255,0.15);
+}
+
+/* ===== GRADE GRID ===== */
+.section-title {
+  font-family: 'Bangers', cursive;
+  font-size: 2rem;
+  letter-spacing: 0.05em;
+  text-align: center;
+  margin: 30px 0 20px;
+  color: var(--neon-blue);
+  text-shadow: 0 0 20px var(--neon-blue);
+}
+
+.grade-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 12px;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.grade-btn {
+  background: var(--dark-card2);
+  border: 2px solid rgba(57,255,20,0.2);
+  border-radius: 12px;
+  padding: 16px 8px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s;
+  font-family: 'Bangers', cursive;
+  font-size: 1.4rem;
+  color: var(--text-main);
+  letter-spacing: 0.05em;
+  position: relative;
+  overflow: hidden;
+}
+
+.grade-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--neon-green), var(--neon-blue));
+  opacity: 0;
+  transition: opacity 0.2s;
+  border-radius: 10px;
+}
+
+.grade-btn:hover {
+  border-color: var(--neon-green);
+  transform: scale(1.08);
+  box-shadow: 0 0 20px rgba(57,255,20,0.4);
+  color: var(--dark-bg);
+}
+
+.grade-btn:hover::after { opacity: 1; }
+
+.grade-btn span {
+  position: relative;
+  z-index: 1;
+}
+
+.grade-label {
+  display: block;
+  font-size: 0.6rem;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 2px;
+  opacity: 0.7;
+}
+
+/* ===== TOPIC CARDS ===== */
+.topics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.topic-card {
+  background: var(--dark-card2);
+  border: 2px solid transparent;
+  border-radius: 16px;
+  padding: 24px 20px;
+  cursor: pointer;
+  transition: all 0.25s;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.topic-card .topic-icon {
+  font-size: 2.5rem;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.topic-card .topic-name {
+  font-family: 'Bangers', cursive;
+  font-size: 1.5rem;
+  letter-spacing: 0.05em;
+  color: var(--neon-blue);
+}
+
+.topic-card .topic-desc {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  margin-top: 8px;
+  line-height: 1.5;
+}
+
+.topic-card:hover {
+  border-color: var(--neon-pink);
+  box-shadow: 0 0 30px rgba(255,110,199,0.3);
+  transform: translateY(-6px);
+}
+
+.help-card {
+  border-color: rgba(255,230,0,0.3);
+  background: linear-gradient(135deg, rgba(255,230,0,0.05), rgba(191,95,255,0.05));
+}
+
+.help-card:hover {
+  border-color: var(--neon-yellow);
+  box-shadow: 0 0 30px rgba(255,230,0,0.3);
+}
+
+/* ===== BACK BUTTON ===== */
+.back-btn {
+  background: transparent;
+  border: 2px solid rgba(255,255,255,0.2);
+  border-radius: 10px;
+  padding: 8px 20px;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.back-btn:hover {
+  border-color: var(--neon-blue);
+  color: var(--neon-blue);
+  box-shadow: 0 0 15px rgba(0,245,255,0.2);
+}
+
+/* ===== BREADCRUMB ===== */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.breadcrumb span { color: var(--neon-green); font-weight: 700; }
+
+/* ===== LESSON SCREEN ===== */
+.lesson-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.lesson-title {
+  font-family: 'Bangers', cursive;
+  font-size: clamp(2rem, 6vw, 3.5rem);
+  letter-spacing: 0.05em;
+  background: linear-gradient(135deg, var(--neon-pink), var(--neon-purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 15px var(--neon-pink));
+}
+
+.progress-bar-wrap {
+  background: rgba(255,255,255,0.1);
+  border-radius: 100px;
+  height: 8px;
+  overflow: hidden;
+  margin: 16px auto;
+  max-width: 400px;
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--neon-green), var(--neon-blue));
+  border-radius: 100px;
+  transition: width 0.5s ease;
+  box-shadow: 0 0 10px var(--neon-green);
+}
+
+.progress-label {
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  margin-top: 6px;
+}
+
+.lesson-content {
+  max-width: 800px;
+  margin: 0 auto;
+  background: var(--dark-card);
+  border-radius: 20px;
+  padding: 32px;
+  border: 1px solid rgba(255,255,255,0.06);
+  line-height: 1.8;
+}
+
+.lesson-content h3 {
+  font-family: 'Bangers', cursive;
+  font-size: 1.6rem;
+  color: var(--neon-yellow);
+  letter-spacing: 0.05em;
+  margin: 24px 0 12px;
+}
+
+.lesson-content h3:first-child { margin-top: 0; }
+
+.lesson-content p {
+  color: var(--text-main);
+  margin-bottom: 12px;
+}
+
+.example-box {
+  background: rgba(0,245,255,0.05);
+  border-left: 4px solid var(--neon-blue);
+  border-radius: 0 12px 12px 0;
+  padding: 16px 20px;
+  margin: 16px 0;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.95rem;
+}
+
+.example-box .ex-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--neon-blue);
+  margin-bottom: 8px;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 800;
+}
+
+.formula-box {
+  background: rgba(191,95,255,0.08);
+  border: 2px solid rgba(191,95,255,0.3);
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  font-family: 'Space Mono', monospace;
+  font-size: 1.2rem;
+  color: var(--neon-purple);
+  margin: 20px 0;
+  box-shadow: 0 0 20px rgba(191,95,255,0.1);
+}
+
+.tip-box {
+  background: rgba(255,230,0,0.06);
+  border: 2px solid rgba(255,230,0,0.25);
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin: 16px 0;
+}
+
+.tip-box .tip-label {
+  font-weight: 800;
+  color: var(--neon-yellow);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 6px;
+}
+
+/* ===== DIFFICULTY SELECTOR ===== */
+.diff-selector {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin: 24px 0;
+  flex-wrap: wrap;
+}
+
+.diff-btn {
+  padding: 10px 28px;
+  border-radius: 100px;
+  border: 2px solid;
+  cursor: pointer;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 800;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+  background: transparent;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.diff-btn.easy { border-color: var(--neon-green); color: var(--neon-green); }
+.diff-btn.medium { border-color: var(--neon-yellow); color: var(--neon-yellow); }
+.diff-btn.hard { border-color: var(--neon-pink); color: var(--neon-pink); }
+
+.diff-btn.easy.active, .diff-btn.easy:hover {
+  background: var(--neon-green); color: var(--dark-bg);
+  box-shadow: 0 0 20px rgba(57,255,20,0.5);
+}
+.diff-btn.medium.active, .diff-btn.medium:hover {
+  background: var(--neon-yellow); color: var(--dark-bg);
+  box-shadow: 0 0 20px rgba(255,230,0,0.5);
+}
+.diff-btn.hard.active, .diff-btn.hard:hover {
+  background: var(--neon-pink); color: var(--dark-bg);
+  box-shadow: 0 0 20px rgba(255,110,199,0.5);
+}
+
+/* ===== CTA BUTTONS ===== */
+.cta-btn {
+  display: inline-block;
+  padding: 14px 36px;
+  border-radius: 100px;
+  border: none;
+  cursor: pointer;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 800;
+  font-size: 1.05rem;
+  transition: all 0.25s;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  position: relative;
+  overflow: hidden;
+}
+
+.cta-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 0; height: 0;
+  background: rgba(255,255,255,0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.4s, height 0.4s;
+}
+
+.cta-btn:hover::before { width: 300px; height: 300px; }
+
+.cta-primary {
+  background: linear-gradient(135deg, var(--neon-green), var(--neon-blue));
+  color: var(--dark-bg);
+  box-shadow: 0 4px 24px rgba(57,255,20,0.4);
+}
+
+.cta-primary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 32px rgba(57,255,20,0.6);
+}
+
+.cta-secondary {
+  background: linear-gradient(135deg, var(--neon-pink), var(--neon-purple));
+  color: #fff;
+  box-shadow: 0 4px 24px rgba(255,110,199,0.4);
+}
+
+.cta-secondary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 32px rgba(255,110,199,0.6);
+}
+
+.btn-row {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 28px;
+}
+
+/* ===== QUIZ SCREEN ===== */
+.quiz-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 800px;
+  margin: 0 auto 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.quiz-progress {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.9rem;
+  color: var(--text-dim);
+}
+
+.quiz-progress strong {
+  color: var(--neon-blue);
+  font-size: 1.1rem;
+}
+
+.timer-circle {
+  width: 70px;
+  height: 70px;
+  position: relative;
+}
+
+.timer-circle svg {
+  transform: rotate(-90deg);
+  width: 70px; height: 70px;
+}
+
+.timer-circle .timer-bg {
+  fill: none;
+  stroke: rgba(255,255,255,0.1);
+  stroke-width: 5;
+}
+
+.timer-circle .timer-arc {
+  fill: none;
+  stroke: var(--neon-green);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-dasharray: 188.5;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 1s linear, stroke 0.5s;
+}
+
+.timer-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Space Mono', monospace;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--neon-green);
+}
+
+.timer-text.warning { color: var(--neon-yellow); }
+.timer-text.danger { color: var(--neon-pink); }
+
+.question-card {
+  background: var(--dark-card);
+  border-radius: 20px;
+  padding: 32px;
+  max-width: 800px;
+  margin: 0 auto;
+  border: 1px solid rgba(255,255,255,0.06);
+  position: relative;
+  overflow: hidden;
+}
+
+.question-number {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--neon-pink);
+  font-weight: 800;
+  margin-bottom: 12px;
+}
+
+.question-text {
+  font-size: clamp(1.1rem, 3vw, 1.4rem);
+  font-weight: 700;
+  line-height: 1.5;
+  margin-bottom: 28px;
+  min-height: 80px;
+}
+
+.question-loading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+.spinner {
+  width: 24px; height: 24px;
+  border: 3px solid rgba(255,255,255,0.1);
+  border-top-color: var(--neon-blue);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.options-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 500px) {
+  .options-grid { grid-template-columns: 1fr; }
+}
+
+.option-btn {
+  background: var(--dark-card2);
+  border: 2px solid rgba(255,255,255,0.1);
+  border-radius: 14px;
+  padding: 16px 20px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s;
+  font-family: 'Nunito', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.option-btn:hover:not(:disabled) {
+  border-color: var(--neon-blue);
+  box-shadow: 0 0 20px rgba(0,245,255,0.2);
+  transform: translateX(4px);
+}
+
+.option-btn:disabled { cursor: default; }
+
+.option-letter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.08);
+  font-family: 'Space Mono', monospace;
+  font-weight: 700;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.option-btn.correct {
+  border-color: var(--neon-green);
+  background: rgba(57,255,20,0.1);
+  box-shadow: 0 0 20px rgba(57,255,20,0.3);
+}
+
+.option-btn.correct .option-letter {
+  background: var(--neon-green);
+  color: var(--dark-bg);
+}
+
+.option-btn.wrong {
+  border-color: var(--neon-pink);
+  background: rgba(255,110,199,0.1);
+  box-shadow: 0 0 20px rgba(255,110,199,0.3);
+}
+
+.option-btn.wrong .option-letter {
+  background: var(--neon-pink);
+  color: var(--dark-bg);
+}
+
+/* ===== HINT / EXPLANATION ===== */
+.hint-area {
+  max-width: 800px;
+  margin: 16px auto 0;
+  animation: fadeIn 0.3s ease;
+}
+
+.hint-box {
+  background: rgba(255,230,0,0.06);
+  border: 2px solid rgba(255,230,0,0.3);
+  border-radius: 14px;
+  padding: 16px 20px;
+}
+
+.hint-box .hint-label {
+  font-weight: 800;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--neon-yellow);
+  margin-bottom: 8px;
+  display: flex; align-items: center; gap: 8px;
+}
+
+.explain-box {
+  background: rgba(255,110,199,0.06);
+  border: 2px solid rgba(255,110,199,0.3);
+  border-radius: 14px;
+  padding: 16px 20px;
+  margin-top: 12px;
+}
+
+.explain-box .explain-label {
+  font-weight: 800;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--neon-pink);
+  margin-bottom: 8px;
+  display: flex; align-items: center; gap: 8px;
+}
+
+.ai-loading {
+  display: flex; align-items: center; gap: 10px;
+  color: var(--text-dim); font-size: 0.9rem; font-style: italic;
+}
+
+/* ===== QUIZ CONTROLS ===== */
+.quiz-controls {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  max-width: 800px;
+  margin: 20px auto;
+  flex-wrap: wrap;
+}
+
+.hint-btn {
+  background: transparent;
+  border: 2px solid var(--neon-yellow);
+  border-radius: 100px;
+  padding: 10px 24px;
+  cursor: pointer;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 800;
+  font-size: 0.9rem;
+  color: var(--neon-yellow);
+  transition: all 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.hint-btn:hover:not(:disabled) {
+  background: var(--neon-yellow); color: var(--dark-bg);
+  box-shadow: 0 0 20px rgba(255,230,0,0.4);
+}
+
+.hint-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.next-btn {
+  background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
+  border: none;
+  border-radius: 100px;
+  padding: 12px 32px;
+  cursor: pointer;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 800;
+  font-size: 1rem;
+  color: #fff;
+  transition: all 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  box-shadow: 0 4px 20px rgba(0,245,255,0.3);
+}
+
+.next-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0,245,255,0.5);
+}
+
+/* ===== RESULTS ===== */
+.results-card {
+  max-width: 600px;
+  margin: 30px auto;
+  text-align: center;
+  background: var(--dark-card);
+  border-radius: 24px;
+  padding: 48px 32px;
+  border: 1px solid rgba(255,255,255,0.06);
+  position: relative;
+  overflow: hidden;
+}
+
+.results-card::before {
+  content: '';
+  position: absolute;
+  top: -100px; left: -100px;
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(57,255,20,0.1), transparent 70%);
+  animation: resultGlow 3s ease-in-out infinite;
+}
+
+@keyframes resultGlow {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+}
+
+.grade-badge {
+  font-family: 'Bangers', cursive;
+  font-size: 6rem;
+  line-height: 1;
+  animation: gradeAppear 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  filter: drop-shadow(0 0 30px currentColor);
+}
+
+@keyframes gradeAppear {
+  from { transform: scale(0) rotate(-20deg); opacity: 0; }
+  to { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+.grade-A { color: var(--neon-green); }
+.grade-B { color: var(--neon-blue); }
+.grade-C { color: var(--neon-yellow); }
+.grade-D { color: #ff9d00; }
+.grade-F { color: var(--neon-pink); }
+
+.score-text {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 16px 0 8px;
+}
+
+.encouraging-msg {
+  font-size: 1.05rem;
+  color: var(--text-dim);
+  line-height: 1.6;
+  margin: 12px 0 28px;
+}
+
+.score-breakdown {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin: 20px 0;
+  flex-wrap: wrap;
+}
+
+.score-stat {
+  text-align: center;
+}
+
+.score-stat .stat-num {
+  font-family: 'Space Mono', monospace;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.score-stat .stat-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+
+.correct-stat .stat-num { color: var(--neon-green); }
+.wrong-stat .stat-num { color: var(--neon-pink); }
+
+/* ===== API KEY MODAL ===== */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.8);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-overlay.active { display: flex; }
+
+.modal {
+  background: var(--dark-card);
+  border-radius: 20px;
+  padding: 36px;
+  max-width: 500px;
+  width: 100%;
+  border: 1px solid rgba(255,255,255,0.1);
+  animation: fadeIn 0.3s ease;
+  position: relative;
+}
+
+.modal h3 {
+  font-family: 'Bangers', cursive;
+  font-size: 1.8rem;
+  color: var(--neon-blue);
+  letter-spacing: 0.05em;
+  margin-bottom: 12px;
+}
+
+.modal p {
+  color: var(--text-dim);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.modal input {
+  width: 100%;
+  background: var(--dark-card2);
+  border: 2px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 14px 18px;
+  color: var(--text-main);
+  font-family: 'Space Mono', monospace;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+  margin-bottom: 16px;
+}
+
+.modal input:focus { border-color: var(--neon-blue); }
+
+.modal-note {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  margin-top: 12px;
+  display: block;
+}
+
+/* ===== HELP PICKER ===== */
+.help-picker-grid {
+  display: grid;
+  gap: 16px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.help-topic-item {
+  background: var(--dark-card2);
+  border: 2px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 20px 24px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.help-topic-item:hover {
+  border-color: var(--neon-purple);
+  box-shadow: 0 0 25px rgba(191,95,255,0.25);
+  transform: translateX(6px);
+}
+
+.help-topic-item .ht-icon { font-size: 2.2rem; flex-shrink: 0; }
+
+.help-topic-item .ht-name {
+  font-family: 'Bangers', cursive;
+  font-size: 1.4rem;
+  letter-spacing: 0.05em;
+  color: var(--neon-blue);
+  margin-bottom: 4px;
+}
+
+.help-topic-item .ht-desc {
+  font-size: 0.9rem;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+/* ===== CONFETTI ===== */
+.confetti-piece {
+  position: fixed;
+  width: 10px;
+  height: 10px;
+  top: -10px;
+  border-radius: 2px;
+  animation: confettiFall linear forwards;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+@keyframes confettiFall {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--dark-bg); }
+::-webkit-scrollbar-thumb { background: rgba(0,245,255,0.3); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--neon-blue); }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 600px) {
+  .screen { padding: 16px; }
+  .question-card { padding: 20px; }
+  .results-card { padding: 32px 20px; }
+  .lesson-content { padding: 20px; }
+}
+
+/* ===== NAV BAR ===== */
+.top-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  background: rgba(13,13,26,0.8);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.nav-logo {
+  font-family: 'Bangers', cursive;
+  font-size: 1.8rem;
+  letter-spacing: 0.05em;
+  background: linear-gradient(135deg, var(--neon-green), var(--neon-blue));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  cursor: pointer;
+}
+
+.nav-key-btn {
+  background: transparent;
+  border: 2px solid rgba(0,245,255,0.3);
+  border-radius: 10px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: var(--neon-blue);
+  transition: all 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.nav-key-btn:hover {
+  background: rgba(0,245,255,0.1);
+  box-shadow: 0 0 15px rgba(0,245,255,0.2);
+}
+
+/* ===== HERO SECTION ===== */
+.hero {
+  text-align: center;
+  padding: 60px 20px 40px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.hero-sub {
+  font-size: 1.1rem;
+  color: var(--text-dim);
+  max-width: 500px;
+  margin: 0 auto 40px;
+  line-height: 1.7;
+}
+
+.feature-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 40px;
+}
+
+.pill {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 100px;
+  padding: 8px 18px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+</style>
+</head>
+<body>
+
+<!-- Notebook Background -->
+<div class="notebook-bg">
+  <div class="notebook-lines"></div>
+  <div class="margin-line"></div>
+  <!-- Floating doodles -->
+  <div class="doodle" style="left:5%;top:10%;animation-duration:8s;font-size:2.5rem;">✏️</div>
+  <div class="doodle" style="left:90%;top:15%;animation-duration:11s;font-size:2rem;">📐</div>
+  <div class="doodle" style="left:15%;top:60%;animation-duration:9s;font-size:1.8rem;">⭐</div>
+  <div class="doodle" style="left:80%;top:55%;animation-duration:13s;font-size:2.2rem;">📏</div>
+  <div class="doodle" style="left:50%;top:8%;animation-duration:7s;font-size:1.5rem;">🔢</div>
+  <div class="doodle" style="left:70%;top:80%;animation-duration:10s;font-size:2rem;">🎯</div>
+  <div class="doodle" style="left:30%;top:85%;animation-duration:12s;font-size:1.8rem;">💡</div>
+  <div class="doodle" style="left:92%;top:40%;animation-duration:6s;font-size:1.5rem;">🧮</div>
+  <div class="doodle" style="left:3%;top:80%;animation-duration:14s;font-size:2rem;">📚</div>
+  <div class="doodle" style="left:60%;top:90%;animation-duration:8s;font-size:1.8rem;">🏆</div>
+
+  <!-- SVG math symbols -->
+  <svg class="doodle-svg" style="left:20%;top:25%;width:60px;animation-duration:12s;" viewBox="0 0 60 60">
+    <text x="10" y="45" font-size="40" fill="#39ff14" opacity="0.3">∑</text>
+  </svg>
+  <svg class="doodle-svg" style="left:75%;top:30%;width:60px;animation-duration:9s;" viewBox="0 0 60 60">
+    <text x="5" y="45" font-size="40" fill="#ff6ec7" opacity="0.3">π</text>
+  </svg>
+  <svg class="doodle-svg" style="left:45%;top:70%;width:60px;animation-duration:11s;" viewBox="0 0 60 60">
+    <text x="5" y="45" font-size="40" fill="#00f5ff" opacity="0.3">√</text>
+  </svg>
+  <svg class="doodle-svg" style="left:8%;top:45%;width:60px;animation-duration:7s;" viewBox="0 0 60 60">
+    <text x="5" y="45" font-size="35" fill="#ffe600" opacity="0.3">∞</text>
+  </svg>
+  <svg class="doodle-svg" style="left:85%;top:70%;width:60px;animation-duration:10s;" viewBox="0 0 60 60">
+    <text x="5" y="45" font-size="40" fill="#bf5fff" opacity="0.3">∫</text>
+  </svg>
+</div>
+
+<!-- API Key Modal -->
+<div class="modal-overlay" id="apiModal">
+  <div class="modal">
+    <h3>🔑 Enter Your API Key</h3>
+    <p>MathUp uses Claude AI to generate fresh quiz questions and hints. Enter your Anthropic API key to get started. Your key is stored only in your browser's session storage.</p>
+    <input type="password" id="apiKeyInput" placeholder="sk-ant-api..." autocomplete="off">
+    <button class="cta-btn cta-primary" onclick="saveApiKey()" style="width:100%">
+      Save Key & Start Learning
+    </button>
+    <span class="modal-note">
+      🔒 Your key is never sent to any server except Anthropic's API directly from your browser.
+      Get your key at <strong>console.anthropic.com</strong>
+    </span>
+  </div>
+</div>
+
+<!-- App Container -->
+<div id="app">
+  <!-- Top Nav -->
+  <nav class="top-nav">
+    <div class="nav-logo" onclick="goHome()">MathUp ⚡</div>
+    <button class="nav-key-btn" onclick="showApiModal()">🔑 API Key</button>
+  </nav>
+
+  <!-- ==================== HOME SCREEN ==================== -->
+  <div id="screen-home" class="screen active">
+    <div class="hero">
+      <div class="logo">MathUp</div>
+      <p class="tagline">Level Up Your Math Skills</p>
+      <p class="hero-sub">AI-powered math practice for every grade. Fresh questions every time, smart hints, and instant feedback.</p>
+      <div class="feature-pills">
+        <span class="pill">🎓 Grades 1-12</span>
+        <span class="pill">🤖 AI Questions</span>
+        <span class="pill">💡 Smart Hints</span>
+        <span class="pill">⏱️ 60s Timer</span>
+        <span class="pill">📊 Score Tracking</span>
+      </div>
+      <button class="cta-btn cta-primary" onclick="showScreen('grade')">
+        🚀 Start Learning
+      </button>
+    </div>
+  </div>
+
+  <!-- ==================== GRADE SCREEN ==================== -->
+  <div id="screen-grade" class="screen">
+    <div style="max-width:700px;margin:0 auto;padding:20px 0">
+      <button class="back-btn" onclick="goHome()">← Back</button>
+      <div class="section-title">Pick Your Grade</div>
+      <div class="grade-grid" id="gradeGrid"></div>
+    </div>
+  </div>
+
+  <!-- ==================== TOPIC SCREEN ==================== -->
+  <div id="screen-topic" class="screen">
+    <div style="max-width:900px;margin:0 auto;padding:20px 0">
+      <button class="back-btn" onclick="showScreen('grade')">← Back</button>
+      <div class="breadcrumb">
+        <span id="topicGradeLabel"></span> / Pick a Topic
+      </div>
+      <div class="section-title" id="topicScreenTitle">Choose Your Topic</div>
+      <div class="topics-grid" id="topicsGrid"></div>
+    </div>
+  </div>
+
+  <!-- ==================== HELP PICKER SCREEN ==================== -->
+  <div id="screen-help" class="screen">
+    <div style="max-width:800px;margin:0 auto;padding:20px 0">
+      <button class="back-btn" onclick="showScreen('topic')">← Back</button>
+      <div class="section-title">What Are You Studying?</div>
+      <p style="text-align:center;color:var(--text-dim);margin-bottom:24px;">Here's a description of each math type for your grade. Pick the one that sounds familiar!</p>
+      <div class="help-picker-grid" id="helpPickerGrid"></div>
+    </div>
+  </div>
+
+  <!-- ==================== LESSON SCREEN ==================== -->
+  <div id="screen-lesson" class="screen">
+    <div style="max-width:800px;margin:0 auto;padding:20px 0">
+      <button class="back-btn" onclick="showScreen('topic')">← Back</button>
+      <div class="lesson-header">
+        <div class="lesson-title" id="lessonTitle"></div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar" id="lessonProgressBar" style="width:0%"></div>
+        </div>
+        <div class="progress-label" id="lessonProgressLabel"></div>
+      </div>
+      <div class="lesson-content" id="lessonContent"></div>
+      <div class="btn-row" style="margin-top:32px;">
+        <button class="cta-btn cta-primary" onclick="startQuizFromLesson()">
+          🧠 Take the Quiz
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== QUIZ SETUP SCREEN ==================== -->
+  <div id="screen-quiz-setup" class="screen">
+    <div style="max-width:600px;margin:0 auto;padding:20px 0;text-align:center">
+      <button class="back-btn" onclick="showScreen('topic')" style="display:inline-flex">← Back</button>
+      <div class="section-title" id="quizSetupTitle"></div>
+      <div class="card" style="margin:0 auto">
+        <p style="color:var(--text-dim);margin-bottom:24px;line-height:1.7">
+          10 AI-generated questions, 60 seconds each.<br>
+          Choose your difficulty:
+        </p>
+        <div class="diff-selector">
+          <button class="diff-btn easy active" onclick="selectDiff('easy',this)">Easy</button>
+          <button class="diff-btn medium" onclick="selectDiff('medium',this)">Medium</button>
+          <button class="diff-btn hard" onclick="selectDiff('hard',this)">Hard</button>
+        </div>
+        <div class="btn-row">
+          <button class="cta-btn cta-primary" onclick="startQuiz()">⚡ Start Quiz</button>
+          <button class="cta-btn" style="background:linear-gradient(135deg,#1a1a35,#13132b);border:2px solid rgba(0,245,255,0.3);color:var(--neon-blue);" onclick="showLesson()">📖 Study First</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== QUIZ SCREEN ==================== -->
+  <div id="screen-quiz" class="screen">
+    <div style="max-width:800px;margin:0 auto;padding:20px 0">
+      <div class="quiz-header">
+        <div>
+          <div class="quiz-progress">Question <strong id="qNum">1</strong> of 10</div>
+          <div style="display:flex;gap:16px;margin-top:6px;font-size:0.85rem;">
+            <span style="color:var(--neon-green)">✓ <span id="scoreCorrect">0</span></span>
+            <span style="color:var(--neon-pink)">✗ <span id="scoreWrong">0</span></span>
+          </div>
+        </div>
+        <div class="timer-circle">
+          <svg viewBox="0 0 70 70">
+            <circle class="timer-bg" cx="35" cy="35" r="30"/>
+            <circle class="timer-arc" id="timerArc" cx="35" cy="35" r="30"/>
+          </svg>
+          <div class="timer-text" id="timerText">60</div>
+        </div>
+      </div>
+
+      <div class="question-card">
+        <div class="question-number" id="questionNumber">Question 1</div>
+        <div class="question-text" id="questionText">
+          <div class="question-loading">
+            <div class="spinner"></div>
+            <span>Generating question with AI...</span>
+          </div>
+        </div>
+        <div class="options-grid" id="optionsGrid"></div>
+      </div>
+
+      <div class="hint-area" id="hintArea" style="display:none"></div>
+
+      <div class="quiz-controls">
+        <button class="hint-btn" id="hintBtn" onclick="getHint()">💡 Hint</button>
+        <button class="next-btn" id="nextBtn" onclick="nextQuestion()" style="display:none">
+          Next Question →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== RESULTS SCREEN ==================== -->
+  <div id="screen-results" class="screen">
+    <div style="max-width:600px;margin:30px auto;padding:0 20px">
+      <div class="results-card">
+        <div class="grade-badge" id="resultGrade"></div>
+        <div class="score-text" id="resultScore"></div>
+        <div class="score-breakdown">
+          <div class="score-stat correct-stat">
+            <div class="stat-num" id="resultCorrect">0</div>
+            <div class="stat-label">Correct</div>
+          </div>
+          <div class="score-stat wrong-stat">
+            <div class="stat-num" id="resultWrong">0</div>
+            <div class="stat-label">Wrong</div>
+          </div>
+        </div>
+        <div class="encouraging-msg" id="encouragingMsg"></div>
+        <div class="btn-row" style="flex-direction:column;gap:12px">
+          <button class="cta-btn cta-primary" onclick="retakeQuiz()">🔄 Try Again</button>
+          <button class="cta-btn cta-secondary" onclick="showScreen('topic')">📚 Pick Another Topic</button>
+          <button class="cta-btn" style="background:transparent;border:2px solid rgba(255,255,255,0.2);color:var(--text-dim);" onclick="goHome()">🏠 Home</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end #app -->
+
+<script>
+// =============================================
+// DATA: GRADES & TOPICS
+// =============================================
+const CURRICULUM = {
+  1: [
+    { id:'addition', name:'Addition', icon:'➕', desc:'Adding numbers together (1+1=2)' },
+    { id:'subtraction', name:'Subtraction', icon:'➖', desc:'Taking numbers away (5-2=3)' },
+    { id:'counting', name:'Counting & Numbers', icon:'🔢', desc:'Counting, number recognition, and ordering' }
+  ],
+  2: [
+    { id:'addition2', name:'Addition', icon:'➕', desc:'Adding larger numbers up to 100' },
+    { id:'subtraction2', name:'Subtraction', icon:'➖', desc:'Subtracting numbers up to 100' },
+    { id:'measurement', name:'Measurement', icon:'📏', desc:'Measuring lengths, comparing sizes' },
+    { id:'shapes', name:'Shapes & Geometry', icon:'🔷', desc:'2D and 3D shapes, patterns' }
+  ],
+  3: [
+    { id:'multiplication', name:'Multiplication', icon:'✖️', desc:'Times tables and basic multiplication' },
+    { id:'division', name:'Division', icon:'➗', desc:'Splitting numbers into equal groups' },
+    { id:'fractions3', name:'Fractions', icon:'½', desc:'Introduction to halves, thirds, fourths' },
+    { id:'area', name:'Area & Perimeter', icon:'📐', desc:'Measuring space and borders of shapes' }
+  ],
+  4: [
+    { id:'mult4', name:'Multi-Digit Multiplication', icon:'✖️', desc:'Multiplying bigger numbers' },
+    { id:'div4', name:'Long Division', icon:'➗', desc:'Dividing with remainders' },
+    { id:'fractions4', name:'Fractions', icon:'½', desc:'Equivalent fractions, comparing fractions' },
+    { id:'decimals4', name:'Decimals', icon:'💲', desc:'Tenths and hundredths' }
+  ],
+  5: [
+    { id:'fractions5', name:'Fractions & Mixed Numbers', icon:'½', desc:'Adding, subtracting, multiplying fractions' },
+    { id:'decimals5', name:'Decimals & Percentages', icon:'%', desc:'Operations with decimals, intro to percents' },
+    { id:'volume', name:'Volume & Geometry', icon:'📦', desc:'Volume of 3D shapes, coordinate planes' }
+  ],
+  6: [
+    { id:'ratios', name:'Ratios & Proportions', icon:'⚖️', desc:'Ratios, rates, unit rates' },
+    { id:'percents', name:'Percents', icon:'%', desc:'Percent problems, discounts, tax' },
+    { id:'integers', name:'Integers', icon:'±', desc:'Positive and negative numbers' },
+    { id:'expressions6', name:'Expressions & Equations', icon:'🔡', desc:'Variables, simple equations' }
+  ],
+  7: [
+    { id:'proportional', name:'Proportional Relationships', icon:'📊', desc:'Proportions, scale factors, similar figures' },
+    { id:'linear7', name:'Linear Equations', icon:'📈', desc:'Solving one-step and two-step equations' },
+    { id:'geometry7', name:'Geometry', icon:'📐', desc:'Angles, triangles, circles, area & volume' },
+    { id:'probability', name:'Probability & Statistics', icon:'🎲', desc:'Chance, data analysis, mean/median/mode' }
+  ],
+  8: [
+    { id:'algebra8', name:'Algebra', icon:'🔡', desc:'Linear equations, inequalities, systems' },
+    { id:'functions', name:'Functions', icon:'f(x)', desc:'Function notation, linear functions, slope' },
+    { id:'geometry8', name:'Geometry', icon:'📐', desc:'Pythagorean theorem, transformations' },
+    { id:'statistics8', name:'Statistics', icon:'📊', desc:'Scatter plots, linear models, data analysis' }
+  ],
+  9: [
+    { id:'algebra1', name:'Algebra I', icon:'🔡', desc:'Polynomials, factoring, quadratics' },
+    { id:'geometry9', name:'Geometry', icon:'📐', desc:'Proofs, triangles, circles, trigonometry intro' }
+  ],
+  10: [
+    { id:'algebra2', name:'Algebra II', icon:'🔡', desc:'Complex numbers, rational functions, sequences' },
+    { id:'geometry10', name:'Geometry', icon:'📐', desc:'Advanced proofs, coordinate geometry' }
+  ],
+  11: [
+    { id:'precalc', name:'Pre-Calculus', icon:'📉', desc:'Trig functions, vectors, polar coordinates' },
+    { id:'stats11', name:'Statistics', icon:'📊', desc:'Probability distributions, hypothesis testing' },
+    { id:'calculus11', name:'Intro to Calculus', icon:'∫', desc:'Limits, derivatives, basic integration' }
+  ],
+  12: [
+    { id:'calculus', name:'Calculus', icon:'∫', desc:'Derivatives, integrals, the fundamental theorem' },
+    { id:'stats12', name:'AP Statistics', icon:'📊', desc:'Inference, regression, statistical tests' },
+    { id:'precalc12', name:'Pre-Calculus Review', icon:'📉', desc:'Functions, trig, conic sections' }
+  ]
+};
+
+// =============================================
+// LESSONS DATA
+// =============================================
+const LESSONS = {
+  addition: {
+    title: 'Addition',
+    sections: [
+      { heading: 'What is Addition?', content: 'Addition means putting numbers together to find out how many there are in total. When you add, the answer is called the <strong>sum</strong>.' },
+      { heading: 'Example', type: 'example', content: '3 + 4 = 7\n\nThink of it as: 🍎🍎🍎 + 🍎🍎🍎🍎 = 🍎🍎🍎🍎🍎🍎🍎' },
+      { heading: 'The Plus Sign (+)', content: 'The <strong>+</strong> sign means "add" or "plus". When you see it, you combine the numbers on both sides.' },
+      { heading: 'Number Line Trick', type: 'tip', content: 'Start at the first number on a number line, then hop forward by the second number. Where you land is your answer!' },
+      { heading: 'Practice Problem', type: 'example', content: '5 + 6 = ?\n\nCount on from 5: 6, 7, 8, 9, 10, 11\nAnswer: 11' }
+    ]
+  },
+  subtraction: {
+    title: 'Subtraction',
+    sections: [
+      { heading: 'What is Subtraction?', content: 'Subtraction means taking away a number from another. The answer is called the <strong>difference</strong>.' },
+      { heading: 'The Minus Sign (-)', content: 'The <strong>–</strong> sign means "subtract" or "take away". You start with the bigger number and remove the smaller one.' },
+      { heading: 'Example', type: 'example', content: '9 - 4 = 5\n\nStart with 9 things, take away 4, and 5 are left.' },
+      { heading: 'Counting Back', type: 'tip', content: 'To subtract, start at the big number on a number line and hop BACKWARDS by the amount you\'re subtracting.' }
+    ]
+  },
+  multiplication: {
+    title: 'Multiplication',
+    sections: [
+      { heading: 'What is Multiplication?', content: 'Multiplication is a fast way to add the same number over and over again. Instead of 4+4+4, we write 3 × 4.' },
+      { heading: 'Formula', type: 'formula', content: 'a × b = adding "a" exactly "b" times' },
+      { heading: 'Example', type: 'example', content: '3 × 4 = 12\n\nThis means: 4 + 4 + 4 = 12\n(three groups of four)' },
+      { heading: 'Times Tables Tip', type: 'tip', content: 'Memorizing your times tables (1×1 through 12×12) is the key to making all other math faster!' },
+      { heading: 'Another Example', type: 'example', content: '7 × 8 = 56\n\nMemory trick: "5, 6, 7, 8 — 56 = 7 × 8"' }
+    ]
+  },
+  division: {
+    title: 'Division',
+    sections: [
+      { heading: 'What is Division?', content: 'Division splits a number into equal groups. It is the opposite of multiplication.' },
+      { heading: 'Formula', type: 'formula', content: 'dividend ÷ divisor = quotient' },
+      { heading: 'Example', type: 'example', content: '12 ÷ 4 = 3\n\nIf you have 12 cookies and share them among 4 friends, each friend gets 3 cookies.' },
+      { heading: 'Remainders', content: 'When a number doesn\'t divide evenly, the leftover amount is called the <strong>remainder</strong>.' },
+      { heading: 'Remainder Example', type: 'example', content: '13 ÷ 4 = 3 remainder 1\n\nWritten as: 3 R1' }
+    ]
+  },
+  algebra8: {
+    title: 'Algebra',
+    sections: [
+      { heading: 'What is Algebra?', content: 'Algebra uses letters (called variables) to represent unknown numbers. Your goal is to find what value makes the equation true.' },
+      { heading: 'Solving Equations', content: 'To solve an equation, do the same operation to BOTH sides to isolate the variable.' },
+      { heading: 'Formula', type: 'formula', content: 'Whatever you do to one side,\nyou MUST do to the other side' },
+      { heading: 'Example: One-Step', type: 'example', content: 'x + 5 = 12\n\nSubtract 5 from both sides:\nx + 5 - 5 = 12 - 5\nx = 7' },
+      { heading: 'Example: Two-Step', type: 'example', content: '2x + 3 = 11\n\nStep 1: Subtract 3 from both sides\n2x = 8\n\nStep 2: Divide both sides by 2\nx = 4' },
+      { heading: 'Check Your Work!', type: 'tip', content: 'Always plug your answer back into the original equation to verify. 2(4) + 3 = 8 + 3 = 11 ✓' }
+    ]
+  },
+  calculus: {
+    title: 'Calculus',
+    sections: [
+      { heading: 'The Two Big Ideas', content: 'Calculus has two main branches: <strong>Differential Calculus</strong> (derivatives — about rates of change) and <strong>Integral Calculus</strong> (integrals — about accumulation/area).' },
+      { heading: 'Derivatives', content: 'A derivative measures how fast a function is changing at any point. Think of it as the instantaneous slope of a curve.' },
+      { heading: 'Power Rule', type: 'formula', content: 'd/dx [xⁿ] = n·xⁿ⁻¹' },
+      { heading: 'Derivative Example', type: 'example', content: 'f(x) = x³\n\nf\'(x) = 3x²\n\n(multiply by exponent, then reduce exponent by 1)' },
+      { heading: 'Integrals', content: 'An integral finds the area under a curve (or reverses a derivative). The indefinite integral adds a constant C.' },
+      { heading: 'Power Rule for Integrals', type: 'formula', content: '∫ xⁿ dx = xⁿ⁺¹/(n+1) + C' },
+      { heading: 'Integral Example', type: 'example', content: '∫ x² dx = x³/3 + C' },
+      { heading: 'Fundamental Theorem', type: 'tip', content: 'The Fundamental Theorem of Calculus says derivatives and integrals are inverse operations — they undo each other!' }
+    ]
+  },
+  precalc: {
+    title: 'Pre-Calculus',
+    sections: [
+      { heading: 'What is Pre-Calculus?', content: 'Pre-Calculus bridges Algebra II and Calculus. Key topics include trigonometry, functions, sequences, and an intro to limits.' },
+      { heading: 'Trigonometric Functions', content: 'The three main trig functions relate the angles of a right triangle to its side lengths:' },
+      { heading: 'SOH CAH TOA', type: 'formula', content: 'sin θ = Opposite/Hypotenuse\ncos θ = Adjacent/Hypotenuse\ntan θ = Opposite/Adjacent' },
+      { heading: 'Unit Circle', content: 'The unit circle has radius 1. Every angle θ maps to a point (cos θ, sin θ) on the circle.' },
+      { heading: 'Example', type: 'example', content: 'sin(30°) = 1/2\ncos(60°) = 1/2\ntan(45°) = 1' },
+      { heading: 'Pythagorean Identity', type: 'formula', content: 'sin²θ + cos²θ = 1' }
+    ]
+  },
+  fractions3: {
+    title: 'Fractions',
+    sections: [
+      { heading: 'What is a Fraction?', content: 'A fraction represents part of a whole. It has two parts: the <strong>numerator</strong> (top) and the <strong>denominator</strong> (bottom).' },
+      { heading: 'Formula', type: 'formula', content: 'numerator\n─────────\ndenominator' },
+      { heading: 'Example', type: 'example', content: '3/4 means 3 out of 4 equal parts.\n\nIf a pizza is cut into 4 slices and you eat 3, you ate 3/4 of the pizza.' },
+      { heading: 'Types of Fractions', type: 'tip', content: 'Proper fraction: numerator < denominator (3/4)\nImproper fraction: numerator ≥ denominator (7/4)\nMixed number: whole + fraction (1¾)' }
+    ]
+  },
+  integers: {
+    title: 'Integers & Negative Numbers',
+    sections: [
+      { heading: 'What are Integers?', content: 'Integers include all whole numbers and their negatives: ..., -3, -2, -1, 0, 1, 2, 3, ...' },
+      { heading: 'Number Line', content: 'Positive numbers are to the right of 0. Negative numbers are to the left of 0.' },
+      { heading: 'Adding Integers', type: 'example', content: '(-3) + 5 = 2   (move right 5 from -3)\n5 + (-3) = 2   (same thing)\n(-4) + (-2) = -6  (move further left)' },
+      { heading: 'Multiplying Negatives', type: 'formula', content: '(+)(+) = +\n(+)(−) = −\n(−)(+) = −\n(−)(−) = +' },
+      { heading: 'Tip', type: 'tip', content: '"A negative times a negative is a positive." Two negatives cancel each other out!' }
+    ]
+  },
+  algebra1: {
+    title: 'Algebra I',
+    sections: [
+      { heading: 'Polynomials', content: 'A polynomial is an expression with variables and coefficients. Examples: 3x², x³ + 2x - 5' },
+      { heading: 'Factoring', content: 'Factoring rewrites an expression as a product of simpler pieces. The most common form:' },
+      { heading: 'Factoring Quadratics', type: 'formula', content: 'ax² + bx + c = a(x - r₁)(x - r₂)' },
+      { heading: 'Example', type: 'example', content: 'x² + 5x + 6\n\nFind two numbers that multiply to 6 and add to 5:\n  → 2 and 3\n\n= (x + 2)(x + 3)' },
+      { heading: 'Quadratic Formula', type: 'formula', content: 'x = (-b ± √(b²-4ac)) / 2a' },
+      { heading: 'Quadratic Example', type: 'example', content: 'x² - 5x + 6 = 0\na=1, b=-5, c=6\n\nx = (5 ± √(25-24)) / 2\nx = (5 ± 1) / 2\nx = 3 or x = 2' }
+    ]
+  },
+  functions: {
+    title: 'Functions',
+    sections: [
+      { heading: 'What is a Function?', content: 'A function takes an input (x) and produces exactly one output (y). Think of it as a machine: put something in, get something out.' },
+      { heading: 'Notation', type: 'formula', content: 'f(x) = expression\n\nf(3) means "plug in x = 3"' },
+      { heading: 'Slope', content: 'For a linear function y = mx + b, the slope m tells you how steep the line is.' },
+      { heading: 'Slope Formula', type: 'formula', content: 'm = (y₂ - y₁) / (x₂ - x₁)' },
+      { heading: 'Example', type: 'example', content: 'f(x) = 2x + 3\n\nf(0) = 3   (y-intercept)\nf(1) = 5\nf(2) = 7\n\nSlope = 2 (goes up 2 for every 1 right)' }
+    ]
+  },
+  probability: {
+    title: 'Probability & Statistics',
+    sections: [
+      { heading: 'Probability', content: 'Probability measures how likely an event is. It\'s a number between 0 (impossible) and 1 (certain).' },
+      { heading: 'Formula', type: 'formula', content: 'P(event) = favorable outcomes / total outcomes' },
+      { heading: 'Example', type: 'example', content: 'Rolling a 4 on a standard die:\nP(4) = 1/6 ≈ 0.167 ≈ 16.7%' },
+      { heading: 'Mean, Median, Mode', content: '<strong>Mean:</strong> average (sum ÷ count)\n<strong>Median:</strong> middle value\n<strong>Mode:</strong> most frequent value' },
+      { heading: 'Example', type: 'example', content: 'Data: 3, 5, 7, 7, 8\n\nMean: (3+5+7+7+8)/5 = 30/5 = 6\nMedian: 7 (middle value)\nMode: 7 (appears twice)' }
+    ]
+  }
+};
+
+// Default lesson for topics without specific content
+function getDefaultLesson(topic, grade) {
+  return {
+    title: topic.name,
+    sections: [
+      { heading: `Introduction to ${topic.name}`, content: `This topic covers the core concepts of ${topic.name} at the ${grade}${getOrdinal(grade)} grade level. ${topic.desc}` },
+      { heading: 'Key Concepts', type: 'tip', content: `Focus on understanding the fundamental principles of ${topic.name}. Practice regularly and don't hesitate to use the hint feature during your quiz!` },
+      { heading: 'Study Strategy', content: `For ${topic.name}, work through problems step by step. Show your work, check your answers, and review any mistakes carefully.` },
+      { heading: 'Ready to Practice?', type: 'tip', content: `Take the quiz to test your knowledge! The AI will generate fresh questions just for you. You can ask for hints anytime!` }
+    ]
+  };
+}
+
+function getOrdinal(n) {
+  const s = ['th','st','nd','rd'], v = n % 100;
+  return s[(v-20)%10] || s[v] || s[0];
+}
+
+// =============================================
+// STATE
+// =============================================
+let state = {
+  grade: null,
+  topic: null,
+  difficulty: 'easy',
+  apiKey: sessionStorage.getItem('mathup_key') || '',
+  quiz: {
+    questions: [],
+    current: 0,
+    correct: 0,
+    wrong: 0,
+    timer: null,
+    timeLeft: 60,
+    answered: false,
+    hintUsed: false
+  }
+};
+
+// =============================================
+// NAV
+// =============================================
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function goHome() {
+  stopTimer();
+  showScreen('home');
+}
+
+// =============================================
+// GRADE SCREEN
+// =============================================
+function buildGradeGrid() {
+  const grid = document.getElementById('gradeGrid');
+  grid.innerHTML = '';
+  for (let g = 1; g <= 12; g++) {
+    const btn = document.createElement('button');
+    btn.className = 'grade-btn';
+    btn.innerHTML = `<span>${g}<sup>${getOrdinal(g)}</sup><span class="grade-label">Grade</span></span>`;
+    btn.onclick = () => selectGrade(g);
+    grid.appendChild(btn);
+  }
+}
+
+function selectGrade(g) {
+  state.grade = g;
+  buildTopicGrid(g);
+  showScreen('topic');
+}
+
+// =============================================
+// TOPIC SCREEN
+// =============================================
+function buildTopicGrid(g) {
+  const topics = CURRICULUM[g] || [];
+  document.getElementById('topicGradeLabel').textContent = `${g}${getOrdinal(g)} Grade`;
+  document.getElementById('topicScreenTitle').textContent = `${g}${getOrdinal(g)} Grade Topics`;
+
+  const grid = document.getElementById('topicsGrid');
+  grid.innerHTML = '';
+
+  topics.forEach(t => {
+    const card = document.createElement('div');
+    card.className = 'topic-card';
+    card.innerHTML = `
+      <span class="topic-icon">${t.icon}</span>
+      <div class="topic-name">${t.name}</div>
+      <div class="topic-desc">${t.desc}</div>
+    `;
+    card.onclick = () => selectTopic(t);
+    grid.appendChild(card);
+  });
+
+  // Help me pick card
+  const helpCard = document.createElement('div');
+  helpCard.className = 'topic-card help-card';
+  helpCard.innerHTML = `
+    <span class="topic-icon">🤔</span>
+    <div class="topic-name" style="color:var(--neon-yellow)">Help Me Pick!</div>
+    <div class="topic-desc">Not sure what you're studying? Let me describe each topic for you.</div>
+  `;
+  helpCard.onclick = () => showHelpPicker(g);
+  grid.appendChild(helpCard);
+}
+
+function showHelpPicker(g) {
+  const topics = CURRICULUM[g] || [];
+  const grid = document.getElementById('helpPickerGrid');
+  grid.innerHTML = '';
+
+  topics.forEach(t => {
+    const item = document.createElement('div');
+    item.className = 'help-topic-item';
+    item.innerHTML = `
+      <span class="ht-icon">${t.icon}</span>
+      <div>
+        <div class="ht-name">${t.name}</div>
+        <div class="ht-desc">${t.desc}</div>
+      </div>
+    `;
+    item.onclick = () => selectTopic(t);
+    grid.appendChild(item);
+  });
+
+  showScreen('help');
+}
+
+// =============================================
+// TOPIC SELECTION
+// =============================================
+function selectTopic(t) {
+  state.topic = t;
+  document.getElementById('quizSetupTitle').textContent = t.name;
+  showScreen('quiz-setup');
+}
+
+function selectDiff(d, btn) {
+  state.difficulty = d;
+  document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function showLesson() {
+  if (!state.topic || !state.grade) return;
+  const lessonData = LESSONS[state.topic.id] || getDefaultLesson(state.topic, state.grade);
+  renderLesson(lessonData);
+  showScreen('lesson');
+}
+
+function startQuizFromLesson() {
+  showScreen('quiz-setup');
+}
+
+// =============================================
+// LESSON RENDERER
+// =============================================
+function renderLesson(data) {
+  document.getElementById('lessonTitle').textContent = data.title;
+
+  const total = data.sections.length;
+  const pct = Math.round((1 / total) * 100);
+  document.getElementById('lessonProgressBar').style.width = pct + '%';
+  document.getElementById('lessonProgressLabel').textContent = `Section 1 of ${total}`;
+
+  const container = document.getElementById('lessonContent');
+  container.innerHTML = '';
+
+  data.sections.forEach((sec, i) => {
+    const h = document.createElement('h3');
+    h.textContent = sec.heading;
+    container.appendChild(h);
+
+    if (sec.type === 'formula') {
+      const box = document.createElement('div');
+      box.className = 'formula-box';
+      box.innerHTML = sec.content.replace(/\n/g, '<br>');
+      container.appendChild(box);
+    } else if (sec.type === 'example') {
+      const box = document.createElement('div');
+      box.className = 'example-box';
+      box.innerHTML = `<div class="ex-label">📝 Example</div>${sec.content.replace(/\n/g, '<br>')}`;
+      container.appendChild(box);
+    } else if (sec.type === 'tip') {
+      const box = document.createElement('div');
+      box.className = 'tip-box';
+      box.innerHTML = `<div class="tip-label">💡 Pro Tip</div>${sec.content.replace(/\n/g, '<br>')}`;
+      container.appendChild(box);
+    } else {
+      const p = document.createElement('p');
+      p.innerHTML = sec.content.replace(/\n/g, '<br>');
+      container.appendChild(p);
+    }
+
+    // Update progress as we scroll (simplified: show all sections)
+  });
+
+  // Scroll progress simulation
+  container.addEventListener('scroll', updateLessonProgress);
+  setTimeout(() => {
+    const pctFull = 100;
+    document.getElementById('lessonProgressBar').style.width = pctFull + '%';
+    document.getElementById('lessonProgressLabel').textContent = `Complete! ✓`;
+  }, 2000);
+}
+
+function updateLessonProgress() {
+  const el = document.getElementById('lessonContent');
+  const pct = Math.min(100, Math.round((el.scrollTop / (el.scrollHeight - el.clientHeight)) * 100));
+  document.getElementById('lessonProgressBar').style.width = pct + '%';
+}
+
+// =============================================
+// QUIZ ENGINE
+// =============================================
+async function startQuiz() {
+  if (!checkApiKey()) return;
+
+  state.quiz = {
+    questions: [],
+    current: 0,
+    correct: 0,
+    wrong: 0,
+    timer: null,
+    timeLeft: 60,
+    answered: false,
+    hintUsed: false
+  };
+
+  document.getElementById('scoreCorrect').textContent = '0';
+  document.getElementById('scoreWrong').textContent = '0';
+
+  showScreen('quiz');
+  await loadQuestion(0);
+}
+
+async function loadQuestion(idx) {
+  state.quiz.answered = false;
+  state.quiz.hintUsed = false;
+
+  document.getElementById('qNum').textContent = idx + 1;
+  document.getElementById('questionNumber').textContent = `Question ${idx + 1}`;
+  document.getElementById('hintArea').style.display = 'none';
+  document.getElementById('hintArea').innerHTML = '';
+  document.getElementById('nextBtn').style.display = 'none';
+  document.getElementById('hintBtn').disabled = false;
+
+  // Show loading
+  document.getElementById('questionText').innerHTML = `
+    <div class="question-loading">
+      <div class="spinner"></div>
+      <span>Generating question with AI...</span>
+    </div>
+  `;
+  document.getElementById('optionsGrid').innerHTML = '';
+
+  // Generate question with Claude
+  let qData;
+  try {
+    qData = await generateQuestion(state.grade, state.topic.name, state.difficulty, idx);
+  } catch (e) {
+    // Fallback to offline question
+    qData = fallbackQuestion(state.grade, state.topic.name, state.difficulty, idx);
+  }
+
+  state.quiz.questions[idx] = qData;
+
+  // Render question
+  document.getElementById('questionText').textContent = qData.question;
+
+  const grid = document.getElementById('optionsGrid');
+  grid.innerHTML = '';
+  const letters = ['A','B','C','D'];
+  qData.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.innerHTML = `<span class="option-letter">${letters[i]}</span>${opt}`;
+    btn.onclick = () => selectAnswer(i, btn, qData);
+    grid.appendChild(btn);
+  });
+
+  startTimer();
+}
+
+async function generateQuestion(grade, topic, difficulty, qIndex) {
+  const prompt = `Generate a multiple choice math question for a ${grade}th grade student studying ${topic}.
+Difficulty: ${difficulty}
+Question number: ${qIndex + 1} of 10 (vary the questions, don't repeat)
+
+Respond ONLY with valid JSON in this exact format:
+{
+  "question": "the question text",
+  "options": ["option A", "option B", "option C", "option D"],
+  "correct": 0,
+  "explanation": "brief explanation of how to solve it"
+}
+
+The "correct" field is the 0-based index of the correct answer.
+Make the question clear and appropriate for the grade level.
+For difficulty "${difficulty}": ${difficulty === 'easy' ? 'straightforward, single-step problems' : difficulty === 'medium' ? 'multi-step problems requiring some thought' : 'challenging problems that require deeper understanding'}.`;
+
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': state.apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 500,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+
+  if (!response.ok) {
+    const err = await response.text();
+    throw new Error('API error: ' + err);
+  }
+
+  const data = await response.json();
+  const text = data.content[0].text.trim();
+
+  // Extract JSON from response
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) throw new Error('Invalid response format');
+
+  const parsed = JSON.parse(jsonMatch[0]);
+  return parsed;
+}
+
+async function getHint() {
+  if (state.quiz.answered || state.quiz.hintUsed) return;
+  state.quiz.hintUsed = true;
+  document.getElementById('hintBtn').disabled = true;
+
+  const q = state.quiz.questions[state.quiz.current];
+  if (!q) return;
+
+  const hintArea = document.getElementById('hintArea');
+  hintArea.style.display = 'block';
+  hintArea.innerHTML = `
+    <div class="hint-box">
+      <div class="hint-label">💡 Hint</div>
+      <div class="ai-loading"><div class="spinner"></div>Getting a hint from Claude...</div>
+    </div>
+  `;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': state.apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 200,
+        messages: [{
+          role: 'user',
+          content: `Give a helpful hint for this math question WITHOUT giving away the answer:\n\nQuestion: ${q.question}\n\nProvide just 1-2 sentences of guidance that helps the student think through the problem.`
+        }]
+      })
+    });
+
+    const data = await response.json();
+    const hint = data.content[0].text.trim();
+
+    hintArea.innerHTML = `
+      <div class="hint-box">
+        <div class="hint-label">💡 Hint</div>
+        <div>${hint}</div>
+      </div>
+    `;
+  } catch (e) {
+    hintArea.innerHTML = `
+      <div class="hint-box">
+        <div class="hint-label">💡 Hint</div>
+        <div>Think about the core concept: ${state.topic.desc}. Try working through it step by step!</div>
+      </div>
+    `;
+  }
+}
+
+function selectAnswer(idx, btn, qData) {
+  if (state.quiz.answered) return;
+  state.quiz.answered = true;
+  stopTimer();
+
+  const btns = document.querySelectorAll('.option-btn');
+  btns.forEach(b => b.disabled = true);
+
+  const isCorrect = idx === qData.correct;
+
+  if (isCorrect) {
+    btn.classList.add('correct');
+    state.quiz.correct++;
+    document.getElementById('scoreCorrect').textContent = state.quiz.correct;
+  } else {
+    btn.classList.add('wrong');
+    state.quiz.wrong++;
+    document.getElementById('scoreWrong').textContent = state.quiz.wrong;
+    // Highlight correct answer
+    btns[qData.correct].classList.add('correct');
+
+    // Show explanation
+    showExplanation(qData);
+  }
+
+  document.getElementById('nextBtn').style.display = 'inline-block';
+}
+
+function showExplanation(qData) {
+  const hintArea = document.getElementById('hintArea');
+  hintArea.style.display = 'block';
+
+  const existingHint = hintArea.querySelector('.hint-box');
+  const explainHtml = `
+    <div class="explain-box">
+      <div class="explain-label">❌ How to Solve It</div>
+      <div>${qData.explanation || 'The correct answer is option ' + ['A','B','C','D'][qData.correct] + '. Review the steps carefully!'}</div>
+    </div>
+  `;
+
+  if (existingHint) {
+    hintArea.insertAdjacentHTML('beforeend', explainHtml);
+  } else {
+    hintArea.innerHTML = explainHtml;
+  }
+}
+
+async function nextQuestion() {
+  const next = state.quiz.current + 1;
+  if (next >= 10) {
+    showResults();
+    return;
+  }
+  state.quiz.current = next;
+  await loadQuestion(next);
+}
+
+// =============================================
+// TIMER
+// =============================================
+function startTimer() {
+  state.quiz.timeLeft = 60;
+  updateTimerDisplay(60);
+
+  state.quiz.timer = setInterval(() => {
+    state.quiz.timeLeft--;
+    updateTimerDisplay(state.quiz.timeLeft);
+
+    if (state.quiz.timeLeft <= 0) {
+      stopTimer();
+      timeUp();
+    }
+  }, 1000);
+}
+
+function stopTimer() {
+  if (state.quiz.timer) {
+    clearInterval(state.quiz.timer);
+    state.quiz.timer = null;
+  }
+}
+
+function updateTimerDisplay(t) {
+  const arc = document.getElementById('timerArc');
+  const text = document.getElementById('timerText');
+  const circumference = 188.5;
+
+  const offset = circumference - (t / 60) * circumference;
+  arc.style.strokeDashoffset = offset;
+
+  text.textContent = t;
+  text.className = 'timer-text';
+
+  if (t <= 10) {
+    arc.style.stroke = 'var(--neon-pink)';
+    text.classList.add('danger');
+  } else if (t <= 20) {
+    arc.style.stroke = 'var(--neon-yellow)';
+    text.classList.add('warning');
+  } else {
+    arc.style.stroke = 'var(--neon-green)';
+  }
+}
+
+function timeUp() {
+  if (state.quiz.answered) return;
+  state.quiz.answered = true;
+  state.quiz.wrong++;
+  document.getElementById('scoreWrong').textContent = state.quiz.wrong;
+
+  const q = state.quiz.questions[state.quiz.current];
+  if (q) {
+    const btns = document.querySelectorAll('.option-btn');
+    btns.forEach(b => b.disabled = true);
+    if (btns[q.correct]) btns[q.correct].classList.add('correct');
+    showExplanation(q);
+  }
+
+  const hintArea = document.getElementById('hintArea');
+  hintArea.style.display = 'block';
+  hintArea.innerHTML = `<div class="explain-box"><div class="explain-label">⏱️ Time's Up!</div><div>You ran out of time. The correct answer has been highlighted.</div></div>`;
+
+  document.getElementById('nextBtn').style.display = 'inline-block';
+}
+
+// =============================================
+// FALLBACK QUESTIONS (offline)
+// =============================================
+function fallbackQuestion(grade, topic, difficulty, idx) {
+  const sets = {
+    easy: [
+      { question: `What is 7 × 8?`, options: ['54', '56', '58', '64'], correct: 1, explanation: '7 × 8 = 56. You can remember this: 5, 6, 7, 8 — 56 = 7×8.' },
+      { question: `Solve: x + 9 = 15`, options: ['x = 5', 'x = 6', 'x = 7', 'x = 8'], correct: 1, explanation: 'Subtract 9 from both sides: x = 15 - 9 = 6.' },
+      { question: `What is 25% of 80?`, options: ['15', '20', '25', '30'], correct: 1, explanation: '25% = 1/4. 80 ÷ 4 = 20.' },
+      { question: `What is the area of a rectangle 6m by 4m?`, options: ['20 m²', '24 m²', '26 m²', '28 m²'], correct: 1, explanation: 'Area = length × width = 6 × 4 = 24 m².' },
+      { question: `Simplify: 3/6`, options: ['1/3', '1/2', '2/3', '3/4'], correct: 1, explanation: 'Both numerator and denominator divide by 3: 3÷3=1, 6÷3=2, so 1/2.' },
+    ],
+    medium: [
+      { question: `Solve: 2x - 5 = 11`, options: ['x = 6', 'x = 7', 'x = 8', 'x = 9'], correct: 2, explanation: 'Add 5: 2x=16. Divide by 2: x=8.' },
+      { question: `What is 15% of 200?`, options: ['25', '30', '35', '40'], correct: 1, explanation: '15% = 0.15. 0.15 × 200 = 30.' },
+      { question: `Factor: x² + 7x + 12`, options: ['(x+3)(x+4)', '(x+2)(x+6)', '(x+1)(x+12)', '(x+4)(x+3)'], correct: 0, explanation: 'Find two numbers multiplying to 12, adding to 7: 3 and 4. So (x+3)(x+4).' },
+      { question: `What is the slope of y = 3x + 5?`, options: ['5', '3', '3x', '8'], correct: 1, explanation: 'In y = mx + b, m is the slope. Here m = 3.' },
+      { question: `If a triangle has angles 50° and 70°, what is the third?`, options: ['50°', '60°', '70°', '80°'], correct: 1, explanation: 'Angles in a triangle sum to 180°. 180 - 50 - 70 = 60°.' },
+    ],
+    hard: [
+      { question: `Differentiate: f(x) = 4x³ - 2x² + x`, options: ["12x² - 4x + 1", "12x² - 2x + 1", "4x² - 2x + 1", "12x - 4x + 1"], correct: 0, explanation: 'Power rule: d/dx[xⁿ]=nxⁿ⁻¹. So 12x² - 4x + 1.' },
+      { question: `Find ∫(3x²)dx`, options: ['x³ + C', '6x + C', '3x³ + C', 'x³/3 + C'], correct: 0, explanation: 'Power rule: ∫xⁿ dx = xⁿ⁺¹/(n+1). ∫3x² dx = 3·x³/3 = x³ + C.' },
+      { question: `Solve: log₂(x) = 5`, options: ['x = 10', 'x = 25', 'x = 32', 'x = 64'], correct: 2, explanation: 'log₂(x)=5 means 2⁵ = x = 32.' },
+      { question: `What is sin(π/6)?`, options: ['√3/2', '1/2', '√2/2', '1'], correct: 1, explanation: 'sin(30°) = sin(π/6) = 1/2. Memorize the unit circle!' },
+      { question: `Simplify: (x²-9)/(x-3)`, options: ['x+3', 'x-3', 'x²-3', 'x+9'], correct: 0, explanation: 'Factor numerator: (x-3)(x+3). Cancel (x-3): result is x+3.' },
+    ]
+  };
+
+  const pool = sets[difficulty] || sets.easy;
+  return pool[idx % pool.length];
+}
+
+// =============================================
+// RESULTS
+// =============================================
+function showResults() {
+  stopTimer();
+  const { correct, wrong } = state.quiz;
+  const total = correct + wrong;
+  const pct = Math.round((correct / 10) * 100);
+
+  let grade, gradeClass, msg;
+  if (pct >= 90) { grade = 'A'; gradeClass = 'grade-A'; msg = "Outstanding! You're crushing it! 🔥 You've mastered this topic — time to level up!"; }
+  else if (pct >= 80) { grade = 'B'; gradeClass = 'grade-B'; msg = "Great job! 🌟 You've got a solid grasp. A little more practice and you'll nail it every time!"; }
+  else if (pct >= 70) { grade = 'C'; gradeClass = 'grade-C'; msg = "Good effort! 💪 You're on the right track. Review the tricky ones and try again!"; }
+  else if (pct >= 60) { grade = 'D'; gradeClass = 'grade-D'; msg = "Keep going! 🚀 You got some right — review the lesson and give it another shot. You've got this!"; }
+  else { grade = 'F'; gradeClass = 'grade-F'; msg = "Don't give up! 💡 Everyone struggles at first. Study the lesson, use hints, and try again. You'll get there!"; }
+
+  document.getElementById('resultGrade').textContent = grade;
+  document.getElementById('resultGrade').className = 'grade-badge ' + gradeClass;
+  document.getElementById('resultScore').textContent = `${correct}/10 — ${pct}%`;
+  document.getElementById('resultCorrect').textContent = correct;
+  document.getElementById('resultWrong').textContent = 10 - correct;
+  document.getElementById('encouragingMsg').textContent = msg;
+
+  showScreen('results');
+
+  if (pct >= 70) {
+    setTimeout(launchConfetti, 300);
+  }
+}
+
+function retakeQuiz() {
+  startQuiz();
+}
+
+// =============================================
+// CONFETTI
+// =============================================
+function launchConfetti() {
+  const colors = ['#39ff14','#ff6ec7','#00f5ff','#ffe600','#bf5fff'];
+  for (let i = 0; i < 80; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    el.style.left = Math.random() * 100 + 'vw';
+    el.style.background = colors[Math.floor(Math.random() * colors.length)];
+    el.style.width = (Math.random() * 10 + 6) + 'px';
+    el.style.height = (Math.random() * 10 + 6) + 'px';
+    el.style.animationDuration = (Math.random() * 2 + 1.5) + 's';
+    el.style.animationDelay = (Math.random() * 0.5) + 's';
+    el.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 3000);
+  }
+}
+
+// =============================================
+// API KEY
+// =============================================
+function checkApiKey() {
+  if (!state.apiKey) {
+    showApiModal();
+    return false;
+  }
+  return true;
+}
+
+function showApiModal() {
+  document.getElementById('apiModal').classList.add('active');
+  document.getElementById('apiKeyInput').value = state.apiKey;
+}
+
+function saveApiKey() {
+  const key = document.getElementById('apiKeyInput').value.trim();
+  if (!key) { alert('Please enter an API key'); return; }
+  state.apiKey = key;
+  sessionStorage.setItem('mathup_key', key);
+  document.getElementById('apiModal').classList.remove('active');
+}
+
+// Close modal on overlay click
+document.getElementById('apiModal').addEventListener('click', function(e) {
+  if (e.target === this) this.classList.remove('active');
+});
+
+// =============================================
+// INIT
+// =============================================
+buildGradeGrid();
+
+// Show API modal on first load if no key
+window.addEventListener('load', () => {
+  if (!state.apiKey) {
+    setTimeout(showApiModal, 800);
+  }
+});
+</script>
+</body>
+</html>
