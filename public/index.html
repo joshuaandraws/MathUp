@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MathUp - Level Up Your Math Skills</title>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Notebook Background -->
+<div class="notebook-bg">
+  <div class="notebook-lines"></div>
+  <div class="margin-line"></div>
+  <div class="doodle" style="left:5%;top:10%;animation-duration:8s;font-size:2.5rem;">✏️</div>
+  <div class="doodle" style="left:90%;top:15%;animation-duration:11s;font-size:2rem;">📐</div>
+  <div class="doodle" style="left:15%;top:60%;animation-duration:9s;font-size:1.8rem;">⭐</div>
+  <div class="doodle" style="left:80%;top:55%;animation-duration:13s;font-size:2.2rem;">📏</div>
+  <div class="doodle" style="left:50%;top:8%;animation-duration:7s;font-size:1.5rem;">🔢</div>
+  <div class="doodle" style="left:70%;top:80%;animation-duration:10s;font-size:2rem;">🎯</div>
+  <div class="doodle" style="left:30%;top:85%;animation-duration:12s;font-size:1.8rem;">💡</div>
+  <div class="doodle" style="left:92%;top:40%;animation-duration:6s;font-size:1.5rem;">🧮</div>
+  <div class="doodle" style="left:3%;top:80%;animation-duration:14s;font-size:2rem;">📚</div>
+  <div class="doodle" style="left:60%;top:90%;animation-duration:8s;font-size:1.8rem;">🏆</div>
+  <svg class="doodle-svg" style="left:20%;top:25%;width:60px;animation-duration:12s;" viewBox="0 0 60 60"><text x="10" y="45" font-size="40" fill="#39ff14" opacity="0.3">∑</text></svg>
+  <svg class="doodle-svg" style="left:75%;top:30%;width:60px;animation-duration:9s;" viewBox="0 0 60 60"><text x="5" y="45" font-size="40" fill="#ff6ec7" opacity="0.3">π</text></svg>
+  <svg class="doodle-svg" style="left:45%;top:70%;width:60px;animation-duration:11s;" viewBox="0 0 60 60"><text x="5" y="45" font-size="40" fill="#00f5ff" opacity="0.3">√</text></svg>
+  <svg class="doodle-svg" style="left:8%;top:45%;width:60px;animation-duration:7s;" viewBox="0 0 60 60"><text x="5" y="45" font-size="35" fill="#ffe600" opacity="0.3">∞</text></svg>
+  <svg class="doodle-svg" style="left:85%;top:70%;width:60px;animation-duration:10s;" viewBox="0 0 60 60"><text x="5" y="45" font-size="40" fill="#bf5fff" opacity="0.3">∫</text></svg>
+</div>
+
+<!-- API Key Modal -->
+<div class="modal-overlay" id="apiModal">
+  <div class="modal">
+    <h3>🔑 Enter Your API Key</h3>
+    <p>MathUp uses Claude AI to generate fresh quiz questions and hints. Enter your Anthropic API key. It's stored only in your browser's session storage.</p>
+    <input type="password" id="apiKeyInput" placeholder="sk-ant-api..." autocomplete="off">
+    <button class="cta-btn cta-primary" onclick="saveApiKey()" style="width:100%">Save Key</button>
+    <span class="modal-note">🔒 Your key goes directly to Anthropic's API — never through our servers. Get yours at <strong>console.anthropic.com</strong></span>
+  </div>
+</div>
+
+<div id="app">
+  <!-- Nav — hidden on username screen -->
+  <nav class="top-nav" id="topNav" style="display:none">
+    <div class="nav-logo" onclick="goHome()">MathUp ⚡</div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="nav-user" id="navUser" style="display:none">
+        <div class="nav-avatar" id="navAvatar"></div>
+        <span id="navUsername"></span>
+      </div>
+      <button class="nav-key-btn" id="navProfileBtn" onclick="showProfile()" style="display:none">📊 Profile</button>
+      <button class="nav-key-btn" onclick="showApiModal()">🔑 API Key</button>
+    </div>
+  </nav>
+
+  <!-- ==================== USERNAME SCREEN ==================== -->
+  <div id="screen-username" class="screen active">
+    <div class="username-screen-wrap">
+      <div class="logo">MathUp</div>
+      <p class="tagline">Level Up Your Math Skills</p>
+      <div class="username-card">
+        <div style="font-size:3rem;margin-bottom:16px">👋</div>
+        <h2 class="username-card-title">Welcome!</h2>
+        <p class="username-card-sub">Enter a username to track your progress and quiz history. New user? Your account is created automatically.</p>
+        <input
+          type="text"
+          id="usernameInput"
+          class="username-input"
+          placeholder="Enter username..."
+          maxlength="20"
+          autocomplete="off"
+          spellcheck="false"
+          onkeydown="if(event.key==='Enter')submitUsername()"
+        >
+        <div id="usernameError" class="username-error"></div>
+        <button class="cta-btn cta-primary" onclick="submitUsername()" id="usernameSubmitBtn" style="width:100%;margin-top:16px">
+          Let's Go! 🚀
+        </button>
+        <p style="font-size:0.75rem;color:var(--text-dim);margin-top:16px;line-height:1.5">
+          1–20 chars · letters, numbers, _ or - only
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== HOME SCREEN ==================== -->
+  <div id="screen-home" class="screen">
+    <div class="hero">
+      <div class="logo">MathUp</div>
+      <p class="tagline">Level Up Your Math Skills</p>
+      <p class="hero-sub">AI-powered math practice for every grade. Fresh questions every time, smart hints, and instant feedback.</p>
+      <div class="feature-pills">
+        <span class="pill">🎓 Grades 1–12</span>
+        <span class="pill">🤖 AI Questions</span>
+        <span class="pill">💡 Smart Hints</span>
+        <span class="pill">⏱️ 60s Timer</span>
+        <span class="pill">📊 Score Tracking</span>
+      </div>
+      <button class="cta-btn cta-primary" onclick="showScreen('grade')">🚀 Start Learning</button>
+    </div>
+  </div>
+
+  <!-- ==================== GRADE SCREEN ==================== -->
+  <div id="screen-grade" class="screen">
+    <div style="max-width:700px;margin:0 auto;padding:20px 0">
+      <button class="back-btn" onclick="goHome()">← Back</button>
+      <div class="section-title">Pick Your Grade</div>
+      <div class="grade-grid" id="gradeGrid"></div>
+    </div>
+  </div>
+
+  <!-- ==================== TOPIC SCREEN ==================== -->
+  <div id="screen-topic" class="screen">
+    <div style="max-width:900px;margin:0 auto;padding:20px 0">
+      <button class="back-btn" onclick="showScreen('grade')">← Back</button>
+      <div class="breadcrumb"><span id="topicGradeLabel"></span> / Pick a Topic</div>
+      <div class="section-title" id="topicScreenTitle">Choose Your Topic</div>
+      <div class="topics-grid" id="topicsGrid"></div>
+    </div>
+  </div>
+
+  <!-- ==================== HELP PICKER SCREEN ==================== -->
+  <div id="screen-help" class="screen">
+    <div style="max-width:800px;margin:0 auto;padding:20px 0">
+      <button class="back-btn" onclick="showScreen('topic')">← Back</button>
+      <div class="section-title">What Are You Studying?</div>
+      <p style="text-align:center;color:var(--text-dim);margin-bottom:24px;">Here's a description of each math type for your grade. Pick the one that sounds familiar!</p>
+      <div class="help-picker-grid" id="helpPickerGrid"></div>
+    </div>
+  </div>
+
+  <!-- ==================== LESSON SCREEN ==================== -->
+  <div id="screen-lesson" class="screen">
+    <div style="max-width:800px;margin:0 auto;padding:20px 0">
+      <button class="back-btn" onclick="showScreen('topic')">← Back</button>
+      <div class="lesson-header">
+        <div class="lesson-title" id="lessonTitle"></div>
+        <div class="progress-bar-wrap"><div class="progress-bar" id="lessonProgressBar" style="width:0%"></div></div>
+        <div class="progress-label" id="lessonProgressLabel"></div>
+      </div>
+      <div class="lesson-content" id="lessonContent"></div>
+      <div class="btn-row" style="margin-top:32px;">
+        <button class="cta-btn cta-primary" onclick="startQuizFromLesson()">🧠 Take the Quiz</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== QUIZ SETUP SCREEN ==================== -->
+  <div id="screen-quiz-setup" class="screen">
+    <div style="max-width:600px;margin:0 auto;padding:20px 0;text-align:center">
+      <button class="back-btn" onclick="showScreen('topic')" style="display:inline-flex">← Back</button>
+      <div class="section-title" id="quizSetupTitle"></div>
+      <div class="card" style="margin:0 auto">
+        <p style="color:var(--text-dim);margin-bottom:24px;line-height:1.7">10 AI-generated questions, 60 seconds each.<br>Choose your difficulty:</p>
+        <div class="diff-selector">
+          <button class="diff-btn easy active" onclick="selectDiff('easy',this)">Easy</button>
+          <button class="diff-btn medium" onclick="selectDiff('medium',this)">Medium</button>
+          <button class="diff-btn hard" onclick="selectDiff('hard',this)">Hard</button>
+        </div>
+        <div class="btn-row">
+          <button class="cta-btn cta-primary" onclick="startQuiz()">⚡ Start Quiz</button>
+          <button class="cta-btn" style="background:linear-gradient(135deg,#1a1a35,#13132b);border:2px solid rgba(0,245,255,0.3);color:var(--neon-blue);" onclick="showLesson()">📖 Study First</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== QUIZ SCREEN ==================== -->
+  <div id="screen-quiz" class="screen">
+    <div style="max-width:800px;margin:0 auto;padding:20px 0">
+      <div class="quiz-header">
+        <div>
+          <div class="quiz-progress">Question <strong id="qNum">1</strong> of 10</div>
+          <div style="display:flex;gap:16px;margin-top:6px;font-size:0.85rem;">
+            <span style="color:var(--neon-green)">✓ <span id="scoreCorrect">0</span></span>
+            <span style="color:var(--neon-pink)">✗ <span id="scoreWrong">0</span></span>
+          </div>
+        </div>
+        <div class="timer-circle">
+          <svg viewBox="0 0 70 70">
+            <circle class="timer-bg" cx="35" cy="35" r="30"/>
+            <circle class="timer-arc" id="timerArc" cx="35" cy="35" r="30"/>
+          </svg>
+          <div class="timer-text" id="timerText">60</div>
+        </div>
+      </div>
+      <div class="question-card">
+        <div class="question-number" id="questionNumber">Question 1</div>
+        <div class="question-text" id="questionText">
+          <div class="question-loading"><div class="spinner"></div><span>Generating questions with AI...</span></div>
+        </div>
+        <div class="options-grid" id="optionsGrid"></div>
+      </div>
+      <div class="hint-area" id="hintArea" style="display:none"></div>
+      <div class="quiz-controls">
+        <button class="hint-btn" id="hintBtn" onclick="getHint()">💡 Hint</button>
+        <button class="next-btn" id="nextBtn" onclick="nextQuestion()" style="display:none">Next Question →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== RESULTS SCREEN ==================== -->
+  <div id="screen-results" class="screen">
+    <div style="max-width:600px;margin:30px auto;padding:0 20px">
+      <div class="results-card">
+        <div class="grade-badge" id="resultGrade"></div>
+        <div class="score-text" id="resultScore"></div>
+        <div class="score-breakdown">
+          <div class="score-stat correct-stat"><div class="stat-num" id="resultCorrect">0</div><div class="stat-label">Correct</div></div>
+          <div class="score-stat wrong-stat"><div class="stat-num" id="resultWrong">0</div><div class="stat-label">Wrong</div></div>
+        </div>
+        <div class="encouraging-msg" id="encouragingMsg"></div>
+        <div id="saveIndicator" class="save-indicator" style="display:none"></div>
+        <div class="btn-row" style="flex-direction:column;gap:12px">
+          <button class="cta-btn cta-primary" onclick="retakeQuiz()">🔄 Try Again</button>
+          <button class="cta-btn cta-secondary" onclick="showProfile()">📊 View Profile</button>
+          <button class="cta-btn" style="background:transparent;border:2px solid rgba(255,255,255,0.2);color:var(--text-dim);" onclick="showScreen('topic')">📚 Pick Another Topic</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== PROFILE SCREEN ==================== -->
+  <div id="screen-profile" class="screen">
+    <div style="max-width:800px;margin:0 auto;padding:20px 0">
+      <button class="back-btn" onclick="goHome()">← Back</button>
+
+      <div class="profile-header">
+        <div class="avatar" id="profileAvatar"></div>
+        <div class="profile-username" id="profileUsernameDisplay"></div>
+        <div class="profile-joined" id="profileJoined"></div>
+      </div>
+
+      <div id="profileLoading" style="text-align:center;padding:60px;color:var(--text-dim)">
+        <div class="spinner" style="margin:0 auto 12px;width:32px;height:32px"></div>
+        Loading your profile...
+      </div>
+
+      <div id="profileContent" style="display:none">
+        <div class="section-title">Your Stats</div>
+        <div class="stats-grid" id="statsGrid"></div>
+
+        <div class="section-title">Grade Breakdown</div>
+        <div class="grade-breakdown-card" id="gradeBreakdown"></div>
+
+        <div class="section-title">Quiz History</div>
+        <div id="quizHistoryEmpty" style="display:none;text-align:center;padding:40px;color:var(--text-dim);background:var(--dark-card);border-radius:16px;">
+          No quizzes yet! Take your first quiz to see history here. 🎯
+        </div>
+        <div class="quiz-history-list" id="quizHistoryList"></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end #app -->
+
+<script src="app.js"></script>
+</body>
+</html>
