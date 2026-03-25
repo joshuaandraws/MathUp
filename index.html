@@ -1811,10 +1811,36 @@ async function startQuiz() {
   document.getElementById('scoreWrong').textContent = '0';
 
   showScreen('quiz');
-  await loadQuestion(0);
+
+  // Show a full-screen loading state while all 10 questions are fetched at once
+  document.getElementById('questionText').innerHTML = `
+    <div class="question-loading">
+      <div class="spinner"></div>
+      <span>Generating 10 unique questions with AI...</span>
+    </div>
+  `;
+  document.getElementById('optionsGrid').innerHTML = '';
+  document.getElementById('hintBtn').disabled = true;
+
+  try {
+    state.quiz.questions = await generateAllQuestions(state.grade, state.topic.name, state.difficulty);
+  } catch (e) {
+    // Fallback: build 10 offline questions
+    state.quiz.questions = Array.from({ length: 10 }, (_, i) =>
+      fallbackQuestion(state.grade, state.topic.name, state.difficulty, i)
+    );
+  }
+
+  document.getElementById('hintBtn').disabled = false;
+  renderQuestion(0);
 }
 
-async function loadQuestion(idx) {
+function loadQuestion(idx) {
+  renderQuestion(idx);
+}
+
+function renderQuestion(idx) {
+  const qData = state.quiz.questions[idx];
   state.quiz.answered = false;
   state.quiz.hintUsed = false;
 
@@ -1825,27 +1851,6 @@ async function loadQuestion(idx) {
   document.getElementById('nextBtn').style.display = 'none';
   document.getElementById('hintBtn').disabled = false;
 
-  // Show loading
-  document.getElementById('questionText').innerHTML = `
-    <div class="question-loading">
-      <div class="spinner"></div>
-      <span>Generating question with AI...</span>
-    </div>
-  `;
-  document.getElementById('optionsGrid').innerHTML = '';
-
-  // Generate question with Claude
-  let qData;
-  try {
-    qData = await generateQuestion(state.grade, state.topic.name, state.difficulty, idx);
-  } catch (e) {
-    // Fallback to offline question
-    qData = fallbackQuestion(state.grade, state.topic.name, state.difficulty, idx);
-  }
-
-  state.quiz.questions[idx] = qData;
-
-  // Render question
   document.getElementById('questionText').textContent = qData.question;
 
   const grid = document.getElementById('optionsGrid');
@@ -1862,22 +1867,35 @@ async function loadQuestion(idx) {
   startTimer();
 }
 
-async function generateQuestion(grade, topic, difficulty, qIndex) {
-  const prompt = `Generate a multiple choice math question for a ${grade}th grade student studying ${topic}.
-Difficulty: ${difficulty}
-Question number: ${qIndex + 1} of 10 (vary the questions, don't repeat)
+async function generateAllQuestions(grade, topic, difficulty) {
+  const diffDesc = {
+    easy: 'straightforward single-step problems',
+    medium: 'multi-step problems requiring some thought',
+    hard: 'challenging problems requiring deeper understanding'
+  }[difficulty];
 
-Respond ONLY with valid JSON in this exact format:
-{
-  "question": "the question text",
-  "options": ["option A", "option B", "option C", "option D"],
-  "correct": 0,
-  "explanation": "brief explanation of how to solve it"
-}
+  const prompt = `Generate exactly 10 multiple choice math questions for a ${grade}th grade student studying ${topic}.
+Difficulty: ${difficulty} (${diffDesc})
 
-The "correct" field is the 0-based index of the correct answer.
-Make the question clear and appropriate for the grade level.
-For difficulty "${difficulty}": ${difficulty === 'easy' ? 'straightforward, single-step problems' : difficulty === 'medium' ? 'multi-step problems requiring some thought' : 'challenging problems that require deeper understanding'}.`;
+CRITICAL REQUIREMENTS:
+- Every question MUST be completely different from the others — no repetition of the same concept or problem type
+- Cover a WIDE VARIETY of distinct subtopics within ${topic} — spread across different areas of the subject
+- Each question must test a different skill or concept
+- Do NOT reuse the same template, numbers, or phrasing for multiple questions
+
+Respond ONLY with a valid JSON array of exactly 10 objects, each in this format:
+[
+  {
+    "question": "the question text",
+    "options": ["option A", "option B", "option C", "option D"],
+    "correct": 0,
+    "explanation": "brief explanation of how to solve it"
+  },
+  ...
+]
+
+The "correct" field is the 0-based index of the correct answer in the options array.
+Make every question clear and appropriate for ${grade}th grade.`;
 
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -1889,7 +1907,7 @@ For difficulty "${difficulty}": ${difficulty === 'easy' ? 'straightforward, sing
     },
     body: JSON.stringify({
       model: 'claude-sonnet-4-20250514',
-      max_tokens: 500,
+      max_tokens: 4000,
       messages: [{ role: 'user', content: prompt }]
     })
   });
@@ -1902,12 +1920,19 @@ For difficulty "${difficulty}": ${difficulty === 'easy' ? 'straightforward, sing
   const data = await response.json();
   const text = data.content[0].text.trim();
 
-  // Extract JSON from response
-  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  // Extract JSON array from response
+  const jsonMatch = text.match(/\[[\s\S]*\]/);
   if (!jsonMatch) throw new Error('Invalid response format');
 
   const parsed = JSON.parse(jsonMatch[0]);
-  return parsed;
+  if (!Array.isArray(parsed) || parsed.length === 0) throw new Error('Expected an array of questions');
+
+  // Ensure we have exactly 10 (pad with fallbacks if Claude returned fewer)
+  while (parsed.length < 10) {
+    parsed.push(fallbackQuestion(grade, topic, difficulty, parsed.length));
+  }
+
+  return parsed.slice(0, 10);
 }
 
 async function getHint() {
@@ -2012,14 +2037,14 @@ function showExplanation(qData) {
   }
 }
 
-async function nextQuestion() {
+function nextQuestion() {
   const next = state.quiz.current + 1;
   if (next >= 10) {
     showResults();
     return;
   }
   state.quiz.current = next;
-  await loadQuestion(next);
+  renderQuestion(next);
 }
 
 // =============================================
